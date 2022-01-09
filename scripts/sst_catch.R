@@ -55,3 +55,7 @@ ggplot(plot, aes(year, value)) +
   geom_point() +
   geom_hline(yintercept = 0, col = "grey") +
   facet_wrap(~name)
+
+# quick thought - the signal of increasing chum hatchery production
+# appears to be clear in the late 1980s and 1990s
+# perhaps we should control for GOA hatchery inputs of chum and pink
