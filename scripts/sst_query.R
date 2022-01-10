@@ -140,11 +140,11 @@ ggplot(plot, aes(year, sc.win.sst)) +
 
 export <- data.frame(year = 1900:2021,
                      annual.sst = sc.ann.sst,
-                     annual.sst.2 = rollmean(sc.ann.sst, 2, align = "right", fill=NA),
+                     annual.sst.2 = rollmean(sc.ann.sst, 2, align = "left", fill=NA),
                      annual.sst.3 = rollmean(sc.ann.sst, 3, align = "center", fill=NA),
                      
                      winter.sst = c(NA, sc.win.sst),
-                     winter.sst.2 = c(NA, rollmean(sc.win.sst, 2, align = "right", fill=NA)),
+                     winter.sst.2 = c(NA, rollmean(sc.win.sst, 2, align = "left", fill=NA)),
                      winter.sst.3 = c(NA, rollmean(sc.win.sst, 3, align = "center", fill=NA))
                      )
 
