@@ -1,7 +1,6 @@
 ## Sockeye salmon brood tables
 
 
-dir.create("./outputs/", showWarnings = FALSE)
 source("./scripts/functions.R")
 library(plyr)
 
@@ -283,7 +282,7 @@ goa_age <- plyr::ddply(goa_return, c("return_yr"), function(x) {
 
 
 ## Save outputs --------------------------------------------
-save(brood_table, file = "./outputs/brood_table.RData")
-save(brood_info, file = "./outputs/brood_info.RData")
-save(return_table, file = "./outputs/return_table.RData")
-save(goa_age, file = "./outputs/goa_age.RData")
+write.csv(brood_table, file = "./data/brood_table.csv", row.names = FALSE)
+write.csv(brood_info, file = "./data/brood_info.csv", row.names = FALSE)
+write.csv(return_table, file = "./data/return_table.csv", row.names = FALSE)
+write.csv(goa_age, file = "./data/goa_age.csv", row.names = FALSE)
