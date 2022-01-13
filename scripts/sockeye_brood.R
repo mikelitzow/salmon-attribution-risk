@@ -13,9 +13,9 @@ library(plyr)
 ##
 ## Dataset DOI: 10.5063/CR5RR9
 
-## Brood table
-bt_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A8371e85b-b693-4f22-9454-714ee17056f7"
-download.file(bt_url, "./data/raw_brood_table_2022_01_13.csv")
+## Uncomment if the data need to be re-downloaded
+# bt_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A8371e85b-b693-4f22-9454-714ee17056f7"
+# download.file(bt_url, "./data/raw_brood_table_2022_01_13.csv")
 
 
 
@@ -88,88 +88,7 @@ sapply(s_brood_use, class)
 summary(s_brood_use)
 
 
-
-## Calculate age proportions -------------------------------
-## Create data frame with estimates of recruits, spawners, proportion of
-## recruits that entered ocean at age, and proportion of recruits at an ocean
-## age (years in the ocean).
-bt <- plyr::ddply(s_brood_use, c("stock_id", "brood_yr"),function(x) {
-                      R <- sum(x[ , grep("^R[[:digit:]]\\.[[:digit:]]", names(x))],
-                               na.rm = TRUE) # total recruits
-                      S <- x$spawners # spawners
-                      ## proportion of recruits that entered ocean at age
-                      ocean_entry_0 <- sum(x[ , grep("^R0\\.", names(x))], na.rm = TRUE) / R
-                      ocean_entry_1 <- sum(x[ , grep("^R1\\.", names(x))], na.rm = TRUE) / R
-                      ocean_entry_2 <- sum(x[ , grep("^R2\\.", names(x))], na.rm = TRUE) / R
-                      ocean_entry_3 <- sum(x[ , grep("^R3\\.", names(x))], na.rm = TRUE) / R
-                      ocean_entry_4 <- sum(x[ , grep("^R4\\.", names(x))], na.rm = TRUE) / R
-                      ## proportion of recruits that spent a certain number of
-                      ## years in the ocean
-                      ocean_yrs_1 <- sum(x[ , grep("^R[[:digit:]]\\.1", names(x))], na.rm = TRUE) / R
-                      ocean_yrs_2 <- sum(x[ , grep("^R[[:digit:]]\\.2", names(x))], na.rm = TRUE) / R
-                      ocean_yrs_3 <- sum(x[ , grep("^R[[:digit:]]\\.3", names(x))], na.rm = TRUE) / R
-                      ocean_yrs_4 <- sum(x[ , grep("^R[[:digit:]]\\.4", names(x))], na.rm = TRUE) / R
-                      ocean_yrs_5 <- sum(x[ , grep("^R[[:digit:]]\\.5", names(x))], na.rm = TRUE) / R
-                      R0.1 <- x[ , "R0.1"] / R
-                      R0.2 <- x[ , "R0.2"] / R
-                      R0.3 <- x[ , "R0.3"] / R
-                      R0.4 <- x[ , "R0.4"] / R
-                      R0.5 <- x[ , "R0.5"] / R
-                      R1.1 <- x[ , "R1.1"] / R
-                      R1.2 <- x[ , "R1.2"] / R
-                      R1.3 <- x[ , "R1.3"] / R
-                      R1.4 <- x[ , "R1.4"] / R
-                      R1.5 <- x[ , "R1.5"] / R
-                      R2.1 <- x[ , "R2.1"] / R
-                      R2.2 <- x[ , "R2.2"] / R
-                      R2.3 <- x[ , "R2.3"] / R
-                      R2.4 <- x[ , "R2.4"] / R
-                      R2.5 <- x[ , "R2.5"] / R
-                      R3.1 <- x[ , "R3.1"] / R
-                      R3.2 <- x[ , "R3.2"] / R
-                      R3.3 <- x[ , "R3.3"] / R
-                      R3.4 <- x[ , "R3.4"] / R
-                      R4.1 <- x[ , "R4.1"] / R
-                      R4.2 <- x[ , "R4.2"] / R
-                      R4.3 <- x[ , "R4.3"] / R
-                      data.frame(stock = x$stock,
-                                 jurisdiction = x$jurisdiction,
-                                 region = x$region,
-                                 ocean_region = x$ocean_region,
-                                 sub_region = x$sub_region,
-                                 lat = x$lat,
-                                 lon = x$lon,
-                                 recruits = R,
-                                 spawners = S,
-                                 ocean_entry_0,
-                                 ocean_entry_1,
-                                 ocean_entry_2,
-                                 ocean_entry_3,
-                                 ocean_entry_4,
-                                 ocean_yrs_1,
-                                 ocean_yrs_2,
-                                 ocean_yrs_3,
-                                 ocean_yrs_4,
-                                 ocean_yrs_5,
-                                 R0.1, R0.2, R0.3, R0.4, R0.5,
-                                 R1.1, R1.2, R1.3, R1.4, R1.5,
-                                 R2.1, R2.2, R2.3, R2.4, R2.5,
-                                 R3.1, R3.2, R3.3, R3.4,
-                                 R4.1, R4.2, R4.3,
-                                 stringsAsFactors = FALSE)
-                      })
-
-## Check that all Rx.x columns were included
-r1 <- grep("^R[[:digit:]]\\.[[:digit:]]", names(s_brood_use), value = TRUE)
-r2 <- grep("^R[[:digit:]]\\.[[:digit:]]", names(bt), value = TRUE)
-if(!all.equal(sort(r1), sort(r2)))
-    stop("Missing ages in brood table cleaning")
-
-# Drop years with missing data
-bt_out_1 <- bt[complete.cases(bt), ]
-
-
-## Subsetting years
+## Subsetting years ----------------------------------------
 ##
 ## In the data processing that Jeanette conducted, small age classes were filled
 ## in using the mean of the 2 previous if that age class was less than 10% of
@@ -189,41 +108,19 @@ bt_out_1 <- bt[complete.cases(bt), ]
 ##   age classes have real values (not NA). A major age class is defined for
 ##   these purposes as any age class where the long term mean is greater than
 ##   1% of the total recruits for that population."
-##
-# bt_out_2 <- bt_out_1[bt_out_1$BY >= 1950 & bt_out_1$BY <= 2007, ]
+bt_out_0 <- s_brood_use[s_brood_use$brood_yr >= 1950 & s_brood_use$brood_yr <= 2020, ] ## use all data
 
+## Drop years with missing data
+bt_out_1 <- bt_out_0[complete.cases(bt_out_0), ]
 
 ## Fill in missing years that fall w/in min and max BY for each stock
-bt_out_3 <- fill_time_series(bt_out_1)
-
-
-
-
-## Create consecutive stock number -------------------------
-bt_split <- split(bt_out_3, bt_out_3$stock_id)
-bt_out_4 <- lapply(1:length(bt_split), function(i) {
-                       dat_i <- bt_split[[i]]
-                       dat_i$stock_no <- i
-                       return(dat_i)
-                    })
-bt_out_4 <- plyr::rbind.fill(bt_out_4)
-
-
-
-## Scale spawners and recruits -----------------------------
-bt_out_5 <- bt_out_4
-names(bt_out_5)[names(bt_out_5) == "spawners"] <- "spawners_raw"
-names(bt_out_5)[names(bt_out_5) == "recruits"] <- "recruits_raw"
-bt_out_5$spawners <- bt_out_5$spawners_raw / 1e5
-bt_out_5$recruits <- bt_out_5$recruits_raw / 1e5
+bt_out_2 <- fill_time_series(bt_out_1)
 
 
 
 ## Reorder columns -----------------------------------------
-r_cols <- grep("^R[[:digit:]]\\.[[:digit:]]", names(bt_out_5), value = TRUE)
-o_cols <- grep("^ocean\\_[[:digit:]]", names(bt_out_5), value = TRUE)
+r_cols <- grep("^R[[:digit:]]\\.[[:digit:]]", names(bt_out_2), value = TRUE)
 m_cols <- c("stock_id",
-            "stock_no",
             "stock",
             "jurisdiction",
             "region",
@@ -233,21 +130,53 @@ m_cols <- c("stock_id",
             "lon",
             "brood_yr",
             "recruits",
-            "spawners",
-            "recruits_raw",
-            "spawners_raw")
-bt_out_6 <- cbind(bt_out_5[ , m_cols],
-                  bt_out_5[ , o_cols],
-                  bt_out_5[ , r_cols])
+            "spawners")
+bt_out_3 <- cbind(bt_out_2[ , m_cols],
+                  bt_out_2[ , r_cols])
 
-head(bt_out_6)
-tail(bt_out_6)
-sapply(bt_out_6, class)
+head(bt_out_3)
+tail(bt_out_3)
+sapply(bt_out_3, class)
+
+
+
+## Calculate ocean age -------------------------------------
+bt_out_4 <- plyr::ddply(bt_out_3, c("stock_id", "brood_yr"),function(x) {
+    ## Total recruits
+    R <- sum(x[ , grep("^R[[:digit:]]\\.[[:digit:]]", names(x))], na.rm = TRUE)
+    ## proportion of recruits that spent a certain number of years in the ocean
+    R_ocean_1 <- sum(x[ , grep("^R[[:digit:]]\\.1", names(x))], na.rm = TRUE)
+    R_ocean_2 <- sum(x[ , grep("^R[[:digit:]]\\.2", names(x))], na.rm = TRUE)
+    R_ocean_3 <- sum(x[ , grep("^R[[:digit:]]\\.3", names(x))], na.rm = TRUE)
+    R_ocean_4 <- sum(x[ , grep("^R[[:digit:]]\\.4", names(x))], na.rm = TRUE)
+    R_ocean_5 <- sum(x[ , grep("^R[[:digit:]]\\.5", names(x))], na.rm = TRUE)
+    d <- data.frame(stock = x$stock,
+                    jurisdiction = x$jurisdiction,
+                    region = x$region,
+                    ocean_region = x$ocean_region,
+                    sub_region = x$sub_region,
+                    lat = x$lat,
+                    lon = x$lon,
+                    recruits = R,
+                    spawners = x$spawners,
+                    R_ocean_1,
+                    R_ocean_2,
+                    R_ocean_3,
+                    R_ocean_4,
+                    R_ocean_5,
+                    stringsAsFactors = FALSE)
+    r_cols <- grep("^R[[:digit:]]\\.[[:digit:]]", names(x), value = TRUE)
+    cbind(d, x[ , r_cols])
+})
+
+
+head(bt_out_4)
+tail(bt_out_4)
 
 
 
 ## Final brood table ---------------------------------------
-brood_table <- bt_out_6
+brood_table <- bt_out_4
 head(brood_table)
 tail(brood_table)
 sapply(brood_table, class)
@@ -257,22 +186,104 @@ summary(brood_table)
 
 ## Create stock info table ---------------------------------
 brood_info <- plyr::ddply(brood_table, .(stock_id), summarize,
-                         stock_no = unique(stock_no),
-                         stock = unique(stock),
-                         region = unique(region),
-                         ocean_region = unique(ocean_region),
-                         sub_region = unique(sub_region),
-                         lat = unique(lat),
-                         lon = unique(lon),
-                         na_count = sum(is.na(recruits)),
-                         n_years = sum(!is.na(recruits)),
-                         yr_start = min(brood_yr),
-                         yr_end = max(brood_yr)
+                          stock = unique(stock),
+                          region = unique(region),
+                          ocean_region = unique(ocean_region),
+                          sub_region = unique(sub_region),
+                          lat = unique(lat),
+                          lon = unique(lon),
+                          na_count = sum(is.na(recruits)),
+                          n_years = sum(!is.na(recruits)),
+                          yr_start = min(brood_yr),
+                          yr_end = max(brood_yr)
 )
 brood_info$stock <- factor(brood_info$stock, levels = unique(brood_info$stock))
+
+
+
+## Create return table -------------------------------------
+r_cols <- sort(grep("^R[[:digit:]]\\.[[:digit:]]", names(brood_table), value = TRUE))
+max_age <- 8
+age_info <- rbind(data.frame(r = c("R0.1"), age = 2),
+                  data.frame(r = c("R0.2", "R1.1"), age = 3),
+                  data.frame(r = c("R0.3", "R1.2", "R2.1"), age = 4),
+                  data.frame(r = c("R0.4", "R1.3", "R2.2", "R3.1"), age = 5),
+                  data.frame(r = c("R0.5", "R1.4", "R2.3", "R3.2", "R4.1"), age = 6),
+                  data.frame(r = c(        "R1.5", "R2.4", "R3.3", "R4.2"), age = 7),
+                  data.frame(r = c(                "R2.5", "R3.4", "R4.3"), age = 8))
+
+## for each stock
+return_table_full <- plyr::ddply(brood_table, c("stock_id"), function(x) {
+    ## 1. Subset age-specific recruit columns
+    r <- x[ , r_cols]
+    ## 2. Define brood and return years
+    by <- x$brood_yr
+    ry <- (min(by)):(max(by) + max_age)
+    ## 3. Create empty matrix to store return data: [year x age]
+    m <- matrix(NA, nrow = length(ry), ncol = length(r_cols), dimnames = list(ry, r_cols))
+    ## 4. Fill return year matrix
+    for(i in 1:nrow(age_info)) {
+        r_i <- age_info$r[i]                      ## current age
+        off <- age_info$age[i]                    ## age offset
+        ind <- off:(off + length(r[ , r_i]) - 1)  ## indices in m to replace
+        m[ind , r_i] <- r[ , r_i]                 ## fill return table
+    }
+    ## 5. Calculate returns by ocean age
+    R_ocean_1 <- apply(m[ , grep("^R[[:digit:]]\\.1", age_info$r)], 1, sum, na.rm = TRUE)
+    R_ocean_2 <- apply(m[ , grep("^R[[:digit:]]\\.2", age_info$r)], 1, sum, na.rm = TRUE)
+    R_ocean_3 <- apply(m[ , grep("^R[[:digit:]]\\.3", age_info$r)], 1, sum, na.rm = TRUE)
+    R_ocean_4 <- apply(m[ , grep("^R[[:digit:]]\\.4", age_info$r)], 1, sum, na.rm = TRUE)
+    R_ocean_5 <- apply(m[ , grep("^R[[:digit:]]\\.5", age_info$r)], 1, sum, na.rm = TRUE)
+    ## 6. Create output dataframe
+    data.frame(stock = unique(x$stock),
+               region = unique(x$region),
+               ocean_region = unique(x$ocean_region),
+               return_yr = ry,
+               returns = apply(m, 1, sum, na.rm = TRUE),
+               ## don't use if no data are available for: age-3 -- age-6
+               use = c(rep(0, 5), rep(1, length(ry) - 11), rep(0, 6)),
+               R_ocean_1 = R_ocean_1,
+               R_ocean_2 = R_ocean_2,
+               R_ocean_3 = R_ocean_3,
+               R_ocean_4 = R_ocean_4,
+               R_ocean_5 = R_ocean_5,
+               m)
+})
+return_table <- return_table_full[return_table_full$use == 1, ]
+
+
+
+## Calculate GOA age proportions ---------------------------
+x1 <- return_table[return_table$ocean_region == "GOA", ]
+x2 <- return_table[return_table$region == "SEAK", ]
+goa_return <- rbind(x2, x1)
+unique(goa_return$stock)
+head(goa_return)
+
+goa_age <- plyr::ddply(goa_return, c("return_yr"), function(x) {
+    N <- nrow(x)
+    R <- sum(x$returns)
+    R_ocean_1 <- sum(x$R_ocean_1) / R
+    R_ocean_2 <- sum(x$R_ocean_2) / R
+    R_ocean_3 <- sum(x$R_ocean_3) / R
+    R_ocean_4 <- sum(x$R_ocean_4) / R
+    R_ocean_5 <- sum(x$R_ocean_5) / R
+    data.frame(region = "GOA",
+               return_yr = unique(x$return_yr),
+               n_stocks = N,
+               R = R,
+               R_ocean_1 = R_ocean_1,
+               R_ocean_2 = R_ocean_2,
+               R_ocean_3 = R_ocean_3,
+               R_ocean_4 = R_ocean_4,
+               R_ocean_5 = R_ocean_5)
+})
+
 
 
 
 ## Save outputs --------------------------------------------
 save(brood_table, file = "./outputs/brood_table.RData")
 save(brood_info, file = "./outputs/brood_info.RData")
+save(return_table, file = "./outputs/return_table.RData")
+save(goa_age, file = "./outputs/goa_age.RData")
