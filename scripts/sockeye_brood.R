@@ -211,28 +211,33 @@ age_info <- rbind(data.frame(r = c("R0.1"), age = 2),
                   data.frame(r = c(        "R1.5", "R2.4", "R3.3", "R4.2"), age = 7),
                   data.frame(r = c(                "R2.5", "R3.4", "R4.3"), age = 8))
 
-## for each stock
 return_table_full <- plyr::ddply(brood_table, c("stock_id"), function(x) {
     ## 1. Subset age-specific recruit columns
     r <- x[ , r_cols]
+
     ## 2. Define brood and return years
     by <- x$brood_yr
-    ry <- (min(by)):(max(by) + max_age)
+    ry <- min(by):(max(by) + max_age)
+
     ## 3. Create empty matrix to store return data: [year x age]
-    m <- matrix(NA, nrow = length(ry), ncol = length(r_cols), dimnames = list(ry, r_cols))
+    m <- matrix(NA, nrow = length(ry), ncol = length(r_cols),
+                dimnames = list(ry, r_cols))
+
     ## 4. Fill return year matrix
     for(i in 1:nrow(age_info)) {
         r_i <- age_info$r[i]                      ## current age
         off <- age_info$age[i]                    ## age offset
-        ind <- off:(off + length(r[ , r_i]) - 1)  ## indices in m to replace
+        ind <- off:(off + length(r[ , r_i]) - 1)  ## rows in m to replace
         m[ind , r_i] <- r[ , r_i]                 ## fill return table
     }
+
     ## 5. Calculate returns by ocean age
     R_ocean_1 <- apply(m[ , grep("^R[[:digit:]]\\.1", age_info$r)], 1, sum, na.rm = TRUE)
     R_ocean_2 <- apply(m[ , grep("^R[[:digit:]]\\.2", age_info$r)], 1, sum, na.rm = TRUE)
     R_ocean_3 <- apply(m[ , grep("^R[[:digit:]]\\.3", age_info$r)], 1, sum, na.rm = TRUE)
     R_ocean_4 <- apply(m[ , grep("^R[[:digit:]]\\.4", age_info$r)], 1, sum, na.rm = TRUE)
     R_ocean_5 <- apply(m[ , grep("^R[[:digit:]]\\.5", age_info$r)], 1, sum, na.rm = TRUE)
+
     ## 6. Create output dataframe
     data.frame(stock = unique(x$stock),
                region = unique(x$region),
@@ -277,7 +282,6 @@ goa_age <- plyr::ddply(goa_return, c("return_yr"), function(x) {
                R_ocean_4 = R_ocean_4,
                R_ocean_5 = R_ocean_5)
 })
-
 
 
 
