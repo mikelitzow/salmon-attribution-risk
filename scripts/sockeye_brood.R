@@ -201,60 +201,73 @@ brood_info$stock <- factor(brood_info$stock, levels = unique(brood_info$stock))
 
 
 ## Create return table -------------------------------------
-r_cols <- sort(grep("^R[[:digit:]]\\.[[:digit:]]", names(brood_table), value = TRUE))
+
+## Get age column names
+r_cols <- sort(grep("^R[[:digit:]]\\.[[:digit:]]",
+                    names(brood_table), value = TRUE))
+
+## Define max age in dataset
 max_age <- 8
-age_info <- rbind(data.frame(r = c("R0.1"), age = 2),
-                  data.frame(r = c("R0.2", "R1.1"), age = 3),
-                  data.frame(r = c("R0.3", "R1.2", "R2.1"), age = 4),
-                  data.frame(r = c("R0.4", "R1.3", "R2.2", "R3.1"), age = 5),
-                  data.frame(r = c("R0.5", "R1.4", "R2.3", "R3.2", "R4.1"), age = 6),
-                  data.frame(r = c(        "R1.5", "R2.4", "R3.3", "R4.2"), age = 7),
-                  data.frame(r = c(                "R2.5", "R3.4", "R4.3"), age = 8))
+
+## Create info table of age columns and total age
+age_info <- rbind(data.frame(r = c("R0.1"), total_age = 2),
+                  data.frame(r = c("R0.2", "R1.1"), total_age = 3),
+                  data.frame(r = c("R0.3", "R1.2", "R2.1"), total_age = 4),
+                  data.frame(r = c("R0.4", "R1.3", "R2.2", "R3.1"), total_age = 5),
+                  data.frame(r = c("R0.5", "R1.4", "R2.3", "R3.2", "R4.1"), total_age = 6),
+                  data.frame(r = c(        "R1.5", "R2.4", "R3.3", "R4.2"), total_age = 7),
+                  data.frame(r = c(                "R2.5", "R3.4", "R4.3"), total_age = 8))
+
+## Check we included all age columns (should be TRUE)
+nrow(age_info) == length(r_cols)
 
 return_table_full <- plyr::ddply(brood_table, c("stock_id"), function(x) {
     ## 1. Subset age-specific recruit columns
-    r <- x[ , r_cols]
+    r_brood <- x[ , r_cols]
 
     ## 2. Define brood and return years
     by <- x$brood_yr
     ry <- min(by):(max(by) + max_age)
+    row.names(r_brood) <- by
 
     ## 3. Create empty matrix to store return data: [year x age]
-    m <- matrix(NA, nrow = length(ry), ncol = length(r_cols),
-                dimnames = list(ry, r_cols))
+    r_return <- matrix(NA, nrow = length(ry), ncol = length(r_cols),
+                       dimnames = list(ry, r_cols))
 
     ## 4. Fill return year matrix
     for(i in 1:nrow(age_info)) {
-        r_i <- age_info$r[i]                      ## current age
-        off <- age_info$age[i]                    ## age offset
-        ind <- off:(off + length(r[ , r_i]) - 1)  ## rows in m to replace
-        m[ind , r_i] <- r[ , r_i]                 ## fill return table
+        col  <- age_info$r[i]                              ## current age column
+        age  <- age_info$total_age[i]                      ## age offset based on total age
+        rows <- (age + 1):(age + length(r_brood[ , col]))  ## rows in r_return to replace
+        r_return[rows, col] <- r_brood[ , col]             ## fill return table
     }
 
     ## 5. Calculate returns by ocean age
-    R_ocean_1 <- apply(m[ , grep("^R[[:digit:]]\\.1", age_info$r)], 1, sum, na.rm = TRUE)
-    R_ocean_2 <- apply(m[ , grep("^R[[:digit:]]\\.2", age_info$r)], 1, sum, na.rm = TRUE)
-    R_ocean_3 <- apply(m[ , grep("^R[[:digit:]]\\.3", age_info$r)], 1, sum, na.rm = TRUE)
-    R_ocean_4 <- apply(m[ , grep("^R[[:digit:]]\\.4", age_info$r)], 1, sum, na.rm = TRUE)
-    R_ocean_5 <- apply(m[ , grep("^R[[:digit:]]\\.5", age_info$r)], 1, sum, na.rm = TRUE)
+    R_ocean_1 <- apply(r_return[ , grep("^R[[:digit:]]\\.1", r_cols)], 1, sum, na.rm = TRUE)
+    R_ocean_2 <- apply(r_return[ , grep("^R[[:digit:]]\\.2", r_cols)], 1, sum, na.rm = TRUE)
+    R_ocean_3 <- apply(r_return[ , grep("^R[[:digit:]]\\.3", r_cols)], 1, sum, na.rm = TRUE)
+    R_ocean_4 <- apply(r_return[ , grep("^R[[:digit:]]\\.4", r_cols)], 1, sum, na.rm = TRUE)
+    R_ocean_5 <- apply(r_return[ , grep("^R[[:digit:]]\\.5", r_cols)], 1, sum, na.rm = TRUE)
 
     ## 6. Create output dataframe
     data.frame(stock = unique(x$stock),
                region = unique(x$region),
                ocean_region = unique(x$ocean_region),
                return_yr = ry,
-               returns = apply(m, 1, sum, na.rm = TRUE),
+               returns = apply(r_return, 1, sum, na.rm = TRUE),
                ## don't use if no data are available for: age-3 -- age-6
-               use = c(rep(0, 5), rep(1, length(ry) - 11), rep(0, 6)),
+               use = c(rep(0, 6), rep(1, length(ry) - 11), rep(0, 5)),
                R_ocean_1 = R_ocean_1,
                R_ocean_2 = R_ocean_2,
                R_ocean_3 = R_ocean_3,
                R_ocean_4 = R_ocean_4,
                R_ocean_5 = R_ocean_5,
-               m)
+               r_return)
 })
 return_table <- return_table_full[return_table_full$use == 1, ]
 
+# return_table_full[return_table_full$stock_id == 138, ]
+# return_table_full[return_table_full$stock_id == 144, ]
 
 
 ## Calculate GOA age proportions ---------------------------
@@ -285,8 +298,39 @@ goa_age <- plyr::ddply(goa_return, c("return_yr"), function(x) {
 
 
 
+## Calculate BC age proportions ----------------------------
+## Use Central + Northern BC stocks to get age
+## structure as per Brendan's advice
+x1 <- return_table[return_table$region == "BC Central", ]
+x2 <- return_table[return_table$region == "BC North", ]
+bc_return <- rbind(x2, x1)
+unique(bc_return$stock)
+head(bc_return)
+
+bc_age <- plyr::ddply(bc_return, c("return_yr"), function(x) {
+    N <- nrow(x)
+    R <- sum(x$returns)
+    R_ocean_1 <- sum(x$R_ocean_1) / R
+    R_ocean_2 <- sum(x$R_ocean_2) / R
+    R_ocean_3 <- sum(x$R_ocean_3) / R
+    R_ocean_4 <- sum(x$R_ocean_4) / R
+    R_ocean_5 <- sum(x$R_ocean_5) / R
+    data.frame(region = "BC",
+               return_yr = unique(x$return_yr),
+               n_stocks = N,
+               R = R,
+               R_ocean_1 = R_ocean_1,
+               R_ocean_2 = R_ocean_2,
+               R_ocean_3 = R_ocean_3,
+               R_ocean_4 = R_ocean_4,
+               R_ocean_5 = R_ocean_5)
+})
+
+
+
 ## Save outputs --------------------------------------------
 write.csv(brood_table, file = "./data/brood_table.csv", row.names = FALSE)
 write.csv(brood_info, file = "./data/brood_info.csv", row.names = FALSE)
 write.csv(return_table, file = "./data/return_table.csv", row.names = FALSE)
 write.csv(goa_age, file = "./data/goa_age.csv", row.names = FALSE)
+write.csv(bc_age, file = "./data/bc_age.csv", row.names = FALSE)
