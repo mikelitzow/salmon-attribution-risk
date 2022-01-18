@@ -32,15 +32,19 @@ sock <- plyr::ddply(goa_catch, .(year), summarize, catch = sum(sockeye))
 coho <- plyr::ddply(goa_catch, .(year), summarize, catch = sum(coho))
 pink <- plyr::ddply(goa_catch, .(year), summarize, catch = sum(pink))
 chum <- plyr::ddply(goa_catch, .(year), summarize, catch = sum(chum))
+pink_even <- pink[pink$year %% 2 == 0, ]
+pink_odd  <- pink[pink$year %% 2 != 0, ]
 
 ## Add species
 sock$species <- "Sockeye"
 coho$species <- "Coho"
-pink$species <- "Pink"
 chum$species <- "Chum"
+pink$species <- "Pink"
+pink_even$species <- "Pink even"
+pink_odd$species <- "Pink odd"
 
 ## Combine in long format
-catch <- rbind(sock, coho, pink, chum)
+catch <- rbind(sock, coho, chum, pink_even, pink_odd)
 
 ## Add era variable
 catch$era <- ifelse(catch$year <= 1988, "1977-1988", "1989-2013")
@@ -72,7 +76,7 @@ for(i in 1:nrow(catch)) {
         winter_sst_2 <- sst_i$winter.sst.2
         winter_sst_3 <- sst_i$winter.sst.2
     }
-    if(sp == "Pink" | sp == "Coho") {
+    if(sp %in% c("Coho", "Pink", "Pink even", "Pink odd")) {
         sst_i <- goa_sst[goa_sst$year == yr - 1, ]
         annual_sst   <- sst_i$annual.sst
         annual_sst_2 <- sst_i$annual.sst.2
@@ -157,13 +161,15 @@ pp_check(fit_goa_winter, type = "scatter_avg", nsamples = 50)
 samp <- posterior_samples(fit_goa_winter, pars = "winter_sst")
 df <- data.frame(Coho = samp[["b_speciesCoho:winter_sst"]],
                  Chum = samp[["b_speciesChum:winter_sst"]],
-                 Pink = samp[["b_speciesPink:winter_sst"]],
+                 Pink_even = samp[["b_speciesPinkeven:winter_sst"]],
+                 Pink_odd = samp[["b_speciesPinkodd:winter_sst"]],
                  Sockeye = samp[["b_speciesSockeye:winter_sst"]])
 dfm <- melt(df, id.var = NULL, variable.name = "species", value.name = "slope")
 
 g <- ggplot(dfm) +
     geom_density(aes(x = slope, color = species)) +
     geom_vline(xintercept = 0, color = "grey50", linetype = 2) +
+    scale_color_manual(values = ibm) +
     labs(x = "SST slope", y = "Density", color = "Species", title = "GOA Winter SST") +
     theme_bw()
 print(g)
