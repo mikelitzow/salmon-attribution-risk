@@ -6,6 +6,7 @@ library(ggplot2)
 library(brms)
 dir.create("./outputs", showWarnings = FALSE)
 dir.create("./figures", showWarnings = FALSE)
+cols <- as.vector(palette.colors(palette = "Okabe-Ito"))
 
 
 ## Combine catch and sst -----------------------------------
@@ -169,7 +170,7 @@ dfm <- melt(df, id.var = NULL, variable.name = "species", value.name = "slope")
 g <- ggplot(dfm) +
     geom_density(aes(x = slope, color = species)) +
     geom_vline(xintercept = 0, color = "grey50", linetype = 2) +
-    scale_color_manual(values = ibm) +
+    scale_color_manual(values = cols) +
     labs(x = "SST slope", y = "Density", color = "Species", title = "GOA Winter SST") +
     theme_bw()
 print(g)
