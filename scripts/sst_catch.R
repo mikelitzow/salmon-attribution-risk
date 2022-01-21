@@ -168,7 +168,7 @@ print(g)
 ## Non-linear effect post 1988 is only evident for Sockeye
 
 
-## Fit models ----------------------------------------------
+## Fit lm model --------------------------------------------
 ## Independent intercepts + slopes + variances for each species, but shared autocorrelation
 
 priors <- c(set_prior("student_t(3, 0, 5)", class = "b"),
@@ -191,7 +191,7 @@ save(fit_goa_winter, file = "./outputs/fit_goa_winter.RData")
 load("./outputs/fit_goa_winter.RData")
 summary(fit_goa_winter)
 ce <- conditional_effects(fit_goa_winter)
-plot(ce, ask = FALSE)
+plot(ce, ask = FALSE, points = TRUE, line_args = list(se = FALSE))
 mean(fit_goa_winter$criteria$bayes_R2[ , 1])
 
 ## Posterior predictive checks
@@ -216,3 +216,32 @@ g <- ggplot(dfm) +
     theme_bw()
 print(g)
 ggsave("./figures/slopes_goa_winter_sst.jpg")
+
+
+
+## Fit spline model ----------------------------------------
+## Independent intercepts + slopes + variances for each species, but shared autocorrelation
+
+catch$species_fac <- factor(catch$species, levels = unique(catch$species))
+form_winter_sp <- bf(log_catch_stnd ~ species_fac + s(winter_sst, by = species_fac) +
+                     ar(time = year, gr = species_fac, p = 1), sigma ~ 0 + species_fac)
+fit_goa_winter_sp <- brm(form_winter_sp,
+                         data = catch[catch$year > 1988, ],
+                         cores = 4, chains = 4,
+                         # prior = priors,
+                         save_pars = save_pars(all = TRUE),
+                         seed = 123, iter = 4000)
+fit_goa_winter_sp <- add_criterion(fit_goa_winter_sp, c("loo", "bayes_R2"))
+save(fit_goa_winter_sp, file = "./outputs/fit_goa_winter_sp.RData")
+
+load("./outputs/fit_goa_winter_sp.RData")
+summary(fit_goa_winter_sp)
+check_hmc_diagnostics(fit_goa_winter_sp$fit)
+mean(fit_goa_winter_sp$criteria$bayes_R2[ , 1])
+## TODO: this isn't working??
+ce <- conditional_effects(fit_goa_winter_sp)
+plot(ce, ask = FALSE, points = TRUE, line_args = list(se = FALSE))
+
+## Compare models
+loo(fit_goa_winter)
+loo(fit_goa_winter_sp)
