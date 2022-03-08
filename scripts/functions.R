@@ -87,7 +87,7 @@ brms_summarize <- function(fits, region = NULL, species = NULL,
 
 
 ## fit_gam_list --------------------------------------------
-fit_gam_list <- function(data, covars, moment_match = TRUE, time = FALSE) {
+fit_gam_list <- function(data, covars, moment_match = TRUE, time = NULL) {
     ## Fit a series of brms gam models
     ##
     ## Returns a list of brms fit objects, one model for each covariate in the
@@ -96,24 +96,38 @@ fit_gam_list <- function(data, covars, moment_match = TRUE, time = FALSE) {
     ## data = data.frame
     ## covars = vector of column names in 'data' to include as covars
     ## moment_match = should the LOO use moment matching for high Pareto-k points
-    ## time = should an s(time) component be added to the model
+    ## time = either FALSE, "ar1", or "smooth". If "ar1" and ar1 term is
+    ##        included. If smooth a s(time) component is included.
     fits <- vector("list", length(covars))
     names(fits) <- covars
 
-    priors <- c(set_prior("student_t(3, 0, 3)", class = "Intercept"),
-                set_prior("student_t(3, 0, 3)", class = "b"),
-                set_prior("student_t(3, 0, 3)", class = "sds"),
-                set_prior("student_t(3, 0, 3)", class = "sigma"))
 
     for(i in seq_along(covars)) {
 
-        if(!time) {
+        if(is.null(time)) {
+            priors <- c(set_prior("student_t(3, 0, 3)", class = "Intercept"),
+                        set_prior("student_t(3, 0, 3)", class = "b"),
+                        set_prior("student_t(3, 0, 3)", class = "sds"),
+                        set_prior("student_t(3, 0, 3)", class = "sigma"))
             form_i <- bf(paste0("log_catch_stnd ~ 1 + s(", covars[i], ", k = 5)"))
         }
 
-        if(time) {
+        if(time == "smooth") {
+            priors <- c(set_prior("student_t(3, 0, 3)", class = "Intercept"),
+                        set_prior("student_t(3, 0, 3)", class = "b"),
+                        set_prior("student_t(3, 0, 3)", class = "sds"),
+                        set_prior("student_t(3, 0, 3)", class = "sigma"))
             form_i <- bf(paste0("log_catch_stnd ~ 1 + s(", covars[i], ", k = 5) + ",
                                 "s(year, k = 5)"))
+        }
+        if(time == "ar1") {
+            priors <- c(set_prior("student_t(3, 0, 3)", class = "Intercept"),
+                        set_prior("student_t(3, 0, 3)", class = "b"),
+                        set_prior("student_t(3, 0, 3)", class = "sds"),
+                        set_prior("student_t(3, 0, 3)", class = "sigma"),
+                        set_prior("normal(0, 0.5)", class = "ar"))
+            form_i <- bf(paste0("log_catch_stnd ~ 1 + s(", covars[i], ", k = 5) + ",
+                                "ar(time = year, p = 1, cov = TRUE)"))
         }
 
         fit_i <- brm(form_i,
@@ -161,7 +175,8 @@ fit_lm_list <- function(data, covars, moment_match = TRUE, ar1 = FALSE) {
                         set_prior("student_t(3, 0, 3)", class = "b"),
                         set_prior("student_t(3, 0, 3)", class = "sigma"),
                         set_prior("normal(0, 0.5)", class = "ar"))
-            form_i <- bf(paste0("log_catch_stnd ~ 1 + ",  covars[i], " + ar(time = year, p = 1)"))
+            form_i <- bf(paste0("log_catch_stnd ~ 1 + ",  covars[i],
+                                " + ar(time = year, p = 1, cov = TRUE)"))
         }
 
         fit_i <- brm(form_i,
