@@ -1,6 +1,8 @@
 ## Fit historical sst models
 ## Fit separate models for region,species,covar combinations
 
+source("./scripts/load.R")
+
 dir.create("./figures/fit_sst_historical", showWarnings = FALSE)
 
 catch <- read.csv("./data/catch.csv")
