@@ -1,8 +1,7 @@
 ## Sockeye salmon brood tables
 
 
-source("./scripts/functions.R")
-library(plyr)
+source("./scripts/load.R")
 
 
 ## Download sockeye brood tables ---------------------------

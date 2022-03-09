@@ -1,15 +1,8 @@
 # Analyze effects of sst variability on salmon catch
 # within the historical record (1965-2021)
 
-library(plyr)
-library(reshape2)
-library(ggplot2)
-library(rstan)
-library(brms)
-dir.create("./outputs", showWarnings = FALSE)
-dir.create("./figures", showWarnings = FALSE)
-cols <- as.vector(palette.colors(palette = "Okabe-Ito"))
-theme_set(theme_bw())
+
+source("./scripts/load.R")
 
 
 ## Clean catch data ----------------------------------------

@@ -1,12 +1,6 @@
 ## Fit historical sst models
 ## Fit separate models for region,species,covar combinations
 
-library(plyr)
-library(ggplot2)
-library(rstan)
-library(brms)
-theme_set(theme_bw())
-source("./scripts/functions.R")
 dir.create("./figures/fit_sst_historical", showWarnings = FALSE)
 
 catch <- read.csv("./data/catch.csv")
