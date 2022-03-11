@@ -55,29 +55,9 @@ catch$era <- "1977-1988"
 catch$era <- ifelse(catch$year >= 1989, "1989-2021", catch$era)
 catch$era <- ifelse(catch$year <= 1976, "1965-1976", catch$era)
 
-## Scale catch
-catch <- plyr::ddply(catch, .(region, species), transform,
-                     log_catch = log(catch),
-                     log_catch_stnd = scale(log(catch)),
-                     catch_stnd = scale(catch))
-
 # ML: quick thought - the signal of increasing chum hatchery production appears
 # to be clear in the late 1980s and 1990s perhaps we should control for GOA
 # hatchery inputs of chum and pink
-
-## Autocorrelation
-acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Chum"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Sockeye"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Coho"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Pink even"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Pink odd"], plot = FALSE)[1]
-
-acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Chum"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Sockeye"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Coho"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink even"], plot = FALSE)[1]
-acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink odd"], plot = FALSE)[1]
-
 
 
 ## Combine catch + sst -------------------------------------
@@ -156,11 +136,40 @@ for(i in 1:nrow(catch)) {
     catch$winter_sst_3[i] <- winter_sst_3
 }
 
-## Save catch data
+
+## Create different time periods ---------------------------
 catch_1965 <- catch
+catch_1965 <- plyr::ddply(catch_1965, .(region, species), transform,
+                          log_catch = log(catch),
+                          log_catch_stnd = scale(log(catch)),
+                          catch_stnd = scale(catch))
+
+
 catch <- catch[catch$year >= 1989, ]
+catch <- plyr::ddply(catch, .(region, species), transform,
+                     log_catch = log(catch),
+                     log_catch_stnd = scale(log(catch)),
+                     catch_stnd = scale(catch))
+
+
 write.csv(catch, file = "./data/catch.csv", row.names = FALSE)
 write.csv(catch, file = "./data/catch_1965.csv", row.names = FALSE)
+
+
+## Autocorrelation
+acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Chum"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Sockeye"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Coho"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Pink even"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "GOA" & catch$species == "Pink odd"], plot = FALSE)[1]
+
+acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Chum"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Sockeye"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Coho"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink even"], plot = FALSE)[1]
+acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink odd"], plot = FALSE)[1]
+
+
 
 
 
