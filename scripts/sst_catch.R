@@ -3,6 +3,7 @@
 
 
 source("./scripts/load.R")
+dir.create("./figures/sst_catch", showWarnings = FALSE)
 
 
 ## Clean catch data ----------------------------------------
@@ -26,7 +27,7 @@ goa_sst <- sst[sst$region == "Gulf_of_Alaska", ]
 bc_sst <- sst[sst$region == "British_Columbia_Coast", ]
 
 ## Subset years
-catch_wide <- catch_wide[catch_wide$year >= 1989, ]
+catch_wide <- catch_wide[catch_wide$year >= 1965, ]
 
 ## Sum across catch regions
 sock <- plyr::ddply(catch_wide, .(region, year), summarize, catch = sum(sockeye))
@@ -156,52 +157,40 @@ for(i in 1:nrow(catch)) {
 }
 
 ## Save catch data
+catch_1965 <- catch
+catch <- catch[catch$year >= 1989, ]
 write.csv(catch, file = "./data/catch.csv", row.names = FALSE)
+write.csv(catch, file = "./data/catch_1965.csv", row.names = FALSE)
 
 
 
 ## Plot data -----------------------------------------------
-g <- ggplot(catch) +
+g <- ggplot(catch_1965) +
     aes(year, log_catch, color = species) +
     geom_line() +
+    facet_wrap( ~ region, ncol = 1, scale = "free_y") +
     theme_bw()
 print(g)
+ggsave("./figures/sst_catch/catch.png", width = 8, height = 6)
 
-g <- ggplot(catch) +
-    aes(year, log_catch_stnd) +
-    geom_point() +
-    geom_line() +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    facet_wrap( ~ species) +
-    theme_bw()
-print(g)
 
-g <- ggplot(catch) +
-    aes(x = year, y = log_catch_stnd, color = era) +
-    geom_point() +
-    geom_line() +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    facet_wrap( ~ species, scale = "free_y") +
-    theme_bw()
-print(g)
-
-g <- ggplot(catch) +
+g <- ggplot(catch_1965[catch_1965$region == "NBC", ]) +
     aes(x = winter_sst, y = log_catch_stnd, color = era) +
     geom_point() +
     facet_wrap( ~ species) +
     geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+    ggtitle("Northern BC") +
     theme_bw()
 print(g)
-## Evidence for a change in SST effect after 2014 for Coho, Pink even, & Sockeye
-## May want to use a spline model to account for this
+ggsave("./figures/sst_catch/nbc_catch_sst_era.png", width = 8, height = 6)
 
-g <- ggplot(catch[catch$year >= 1989, ]) +
-    aes(x = winter_sst, y = log_catch_stnd) +
+
+g <- ggplot(catch_1965[catch_1965$region == "GOA", ]) +
+    aes(x = winter_sst, y = log_catch_stnd, color = era) +
     geom_point() +
     facet_wrap( ~ species) +
-    geom_smooth(method = "gam", formula = y ~ s(x), se = TRUE) +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+    ggtitle("GOA") +
     theme_bw()
 print(g)
-## Non-linear effect post 1988 is only evident for Sockeye
-
-
+ggsave("./figures/sst_catch/goa_catch_sst_era.png", width = 8, height = 6)
