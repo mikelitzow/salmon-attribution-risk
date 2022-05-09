@@ -21,52 +21,11 @@ dat_goa_sockeye   <- catch[catch$region == "GOA" & catch$species == "Sockeye" & 
 gam_ar1_far_goa_sockeye <- fit_gam_list(dat_goa_sockeye, covars, time = "ar1")
 save(gam_ar1_sst_goa_sockeye, file = "./outputs/gam_ar1_far_goa_sockeye.RData")
 
-## GOA coho
-gam_ar1_sst_goa_coho <- fit_gam_list(dat_goa_coho, covars, time = "ar1")
-save(gam_ar1_sst_goa_coho, file = "./outputs/gam_ar1_sst_goa_coho.RData")
-
-## GOA Pink Even
-gam_ar1_sst_goa_pink_even <- fit_gam_list(dat_goa_pink_even, covars, time = "ar1")
-save(gam_ar1_sst_goa_pink_even, file = "./outputs/gam_ar1_sst_goa_pink_even.RData")
-
-## GOA Pink Odd
-gam_ar1_sst_goa_pink_odd <- fit_gam_list(dat_goa_pink_odd, covars, time = "ar1")
-save(gam_ar1_sst_goa_pink_odd, file = "./outputs/gam_ar1_sst_goa_pink_odd.RData")
-
-
-## NBC Chum
-gam_ar1_sst_nbc_chum <- fit_gam_list(dat_nbc_chum, covars, time = "ar1")
-save(gam_ar1_sst_nbc_chum, file = "./outputs/gam_ar1_sst_nbc_chum.RData")
-
-## NBC Sockeye
-gam_ar1_sst_nbc_sockeye <- fit_gam_list(dat_nbc_sockeye, covars, time = "ar1")
-save(gam_ar1_sst_nbc_sockeye, file = "./outputs/gam_ar1_sst_nbc_sockeye.RData")
-
-## NBC Coho
-gam_ar1_sst_nbc_coho <- fit_gam_list(dat_nbc_coho, covars, time = "ar1")
-save(gam_ar1_sst_nbc_coho, file = "./outputs/gam_ar1_sst_nbc_coho.RData")
-
-## NBC Pink Even
-gam_ar1_sst_nbc_pink_even <- fit_gam_list(dat_nbc_pink_even, covars, time = "ar1")
-save(gam_ar1_sst_nbc_pink_even, file = "./outputs/gam_ar1_sst_nbc_pink_even.RData")
-
-## NBC Pink Odd
-gam_ar1_sst_nbc_pink_odd <- fit_gam_list(dat_nbc_pink_odd, covars, time = "ar1")
-save(gam_ar1_sst_nbc_pink_odd, file = "./outputs/gam_ar1_sst_nbc_pink_odd.RData")
-
 
 
 ## Load models ##
-load("./outputs/gam_ar1_sst_goa_chum.RData")
 load("./outputs/gam_ar1_sst_goa_sockeye.RData")
-load("./outputs/gam_ar1_sst_goa_coho.RData")
-load("./outputs/gam_ar1_sst_goa_pink_even.RData")
-load("./outputs/gam_ar1_sst_goa_pink_odd.RData")
-load("./outputs/gam_ar1_sst_nbc_chum.RData")
-load("./outputs/gam_ar1_sst_nbc_sockeye.RData")
-load("./outputs/gam_ar1_sst_nbc_coho.RData")
-load("./outputs/gam_ar1_sst_nbc_pink_even.RData")
-load("./outputs/gam_ar1_sst_nbc_pink_odd.RData")
+
 
 
 
