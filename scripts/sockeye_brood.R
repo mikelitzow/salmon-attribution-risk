@@ -325,6 +325,31 @@ bc_age <- plyr::ddply(bc_return, c("return_yr"), function(x) {
                R_ocean_5 = R_ocean_5)
 })
 
+## Calculate Fraser age proportions ----------------------------
+## Use Central + Northern BC stocks to get age
+## structure as per Brendan's advice
+fraser_return <- return_table[return_table$region == "Fraser River", ]
+unique(fraser_return$stock)
+head(fraser_return)
+
+fraser_age <- plyr::ddply(fraser_return, c("return_yr"), function(x) {
+    N <- nrow(x)
+    R <- sum(x$returns)
+    R_ocean_1 <- sum(x$R_ocean_1) / R
+    R_ocean_2 <- sum(x$R_ocean_2) / R
+    R_ocean_3 <- sum(x$R_ocean_3) / R
+    R_ocean_4 <- sum(x$R_ocean_4) / R
+    R_ocean_5 <- sum(x$R_ocean_5) / R
+    data.frame(region = "BC",
+               return_yr = unique(x$return_yr),
+               n_stocks = N,
+               R = R,
+               R_ocean_1 = R_ocean_1,
+               R_ocean_2 = R_ocean_2,
+               R_ocean_3 = R_ocean_3,
+               R_ocean_4 = R_ocean_4,
+               R_ocean_5 = R_ocean_5)
+})
 
 
 ## Save outputs --------------------------------------------
@@ -333,3 +358,4 @@ write.csv(brood_info, file = "./data/brood_info.csv", row.names = FALSE)
 write.csv(return_table, file = "./data/return_table.csv", row.names = FALSE)
 write.csv(goa_age, file = "./data/goa_age.csv", row.names = FALSE)
 write.csv(bc_age, file = "./data/bc_age.csv", row.names = FALSE)
+write.csv(fraser_age, file = "./data/fraser_age.csv", row.names = FALSE)

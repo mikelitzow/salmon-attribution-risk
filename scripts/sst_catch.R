@@ -11,15 +11,18 @@ dir.create("./figures/sst_catch", showWarnings = FALSE)
 ## Read in salmon data
 goa_catch <- read.csv("./data/goa.catch.csv")
 nbc_catch <- read.csv("./data/nbc.catch.csv")
+fraser_catch   <- read.csv("./data/fraser.catch.csv")
 goa_age   <- read.csv("./data/goa_age.csv")
 nbc_age   <- read.csv("./data/bc_age.csv")
+fraser_age   <- read.csv("./data/fraser_age.csv")
 
 ## Add regions
 goa_catch$region <- "GOA"
 nbc_catch$region <- "NBC"
+fraser_catch$region <- "FrBC"
 
 ## Combine
-catch_wide <- plyr::rbind.fill(goa_catch, nbc_catch)
+catch_wide <- plyr::rbind.fill(goa_catch, nbc_catch,fraser_catch)
 
 ## Read in SST data
 sst <- read.csv("./data/regional_north_pacific_ersst_anomaly_time_series.csv")
@@ -80,7 +83,11 @@ age_wgt_nbc <- c(mean(nbc_age$R_ocean_1),
                  mean(nbc_age$R_ocean_4),
                  mean(nbc_age$R_ocean_5))
 
-
+age_wgt_fra <- c(mean(fraser_age$R_ocean_1),
+                 mean(fraser_age$R_ocean_2),
+                 mean(fraser_age$R_ocean_3),
+                 mean(fraser_age$R_ocean_4),
+                 mean(fraser_age$R_ocean_5))
 
 ## Add SST
 catch$annual_sst   <- NA
@@ -101,6 +108,10 @@ for(i in 1:nrow(catch)) {
         sst_dat <- bc_sst
         age_wgt_i <- age_wgt_nbc
     }
+    if(rg == "FrBC") {
+        sst_dat <- bc_sst
+        age_wgt_i <- age_wgt_fra
+    }    
     if(sp == "Chum") {
         sst_i <- sst_dat[sst_dat$year == yr - 3, ]
         annual_sst   <- sst_i$annual.anomaly.unsmoothed
@@ -169,7 +180,7 @@ acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Coho"], plot 
 acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink even"], plot = FALSE)[1]
 acf(catch$log_catch_stnd[catch$region == "NBC" & catch$species == "Pink odd"], plot = FALSE)[1]
 
-
+acf(catch$log_catch_stnd[catch$region == "FrBC" & catch$species == "Sockeye"], plot = FALSE)[1]
 
 
 
@@ -203,3 +214,14 @@ g <- ggplot(catch_1965[catch_1965$region == "GOA", ]) +
     theme_bw()
 print(g)
 ggsave("./figures/sst_catch/goa_catch_sst_era.png", width = 8, height = 6)
+
+
+g <- ggplot(catch_1965[catch_1965$region == "FrBC" & catch_1965$species == "Sockeye", ]) +
+    aes(x = winter_sst, y = log_catch_stnd, color = era) +
+    geom_point() +
+    facet_wrap( ~ species) +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+    ggtitle("Fraser") +
+    theme_bw()
+print(g)
+ggsave("./figures/sst_catch/fraser_catch_sst_era.png", width = 8, height = 6)

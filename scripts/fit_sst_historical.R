@@ -24,6 +24,7 @@ dat_nbc_coho      <- catch[catch$region == "NBC" & catch$species == "Coho" & cat
 dat_nbc_pink_even <- catch[catch$region == "NBC" & catch$species == "Pink even" & catch$year > 1988, ]
 dat_nbc_pink_odd  <- catch[catch$region == "NBC" & catch$species == "Pink odd" & catch$year > 1988, ]
 
+dat_fraser_sockeye   <- catch[catch$region == "FrBC" & catch$species == "Sockeye" & catch$year > 1988, ]
 
 
 ## lm models -----------------------------------------------
@@ -69,6 +70,9 @@ save(lm_sst_nbc_pink_even, file = "./outputs/lm_sst_nbc_pink_even.RData")
 lm_sst_nbc_pink_odd <- fit_lm_list(dat_nbc_pink_odd, covars)
 save(lm_sst_nbc_pink_odd, file = "./outputs/lm_sst_nbc_pink_odd.RData")
 
+## Fraser Sockeye
+lm_sst_fraser_sockeye <- fit_lm_list(dat_fraser_sockeye, covars)
+save(lm_sst_fraser_sockeye, file = "./outputs/lm_sst_fraser_sockeye.RData")
 
 
 ## Load models ##
@@ -82,11 +86,12 @@ load("./outputs/lm_sst_nbc_sockeye.RData")
 load("./outputs/lm_sst_nbc_coho.RData")
 load("./outputs/lm_sst_nbc_pink_even.RData")
 load("./outputs/lm_sst_nbc_pink_odd.RData")
+load("./outputs/lm_sst_fraser_sockeye.RData")
 
 
 
 ## Summarize best models ##
-ms_lm <- vector("list", 10)
+ms_lm <- vector("list", 11)
 ms_lm[[1]]  <- brms_summarize(lm_sst_goa_chum, "GOA", "Chum")
 ms_lm[[2]]  <- brms_summarize(lm_sst_goa_sockeye, "GOA", "Sockeye")
 ms_lm[[3]]  <- brms_summarize(lm_sst_goa_coho, "GOA", "Coho")
@@ -97,6 +102,7 @@ ms_lm[[7]]  <- brms_summarize(lm_sst_nbc_sockeye, "NBC", "Sockeye")
 ms_lm[[8]]  <- brms_summarize(lm_sst_nbc_coho, "NBC", "Coho")
 ms_lm[[9]]  <- brms_summarize(lm_sst_nbc_pink_even, "NBC", "Pink even")
 ms_lm[[10]] <- brms_summarize(lm_sst_nbc_pink_odd, "NBC", "Pink odd")
+ms_lm[[11]] <- brms_summarize(lm_sst_fraser_sockeye, "FrBC", "Sockeye")
 best_lm <- lapply(ms_lm, function(m) m[m$dLOOIC == 0, ])
 best_lm <- plyr::rbind.fill(best_lm)
 
@@ -116,6 +122,7 @@ ce_lm[[7]]  <- ce_best(lm_sst_nbc_sockeye, 1, "NBC", "Sockeye")
 ce_lm[[8]]  <- ce_best(lm_sst_nbc_coho, 1, "NBC", "Coho")
 ce_lm[[9]]  <- ce_best(lm_sst_nbc_pink_even, 1, "NBC", "Pink even")
 ce_lm[[10]] <- ce_best(lm_sst_nbc_pink_odd, 1, "NBC", "Pink odd")
+ce_lm[[11]] <- ce_best(lm_sst_fraser_sockeye, 1, "FrBC", "Sockeye")
 ce_lm <- plyr::rbind.fill(ce_lm)
 
 ## get data for best models
@@ -172,7 +179,9 @@ pp_check(lm_sst_nbc_pink_even[[best_lm$index[best_lm$region == "NBC" &
 pp_check(lm_sst_nbc_pink_odd[[best_lm$index[best_lm$region == "NBC" &
                               best_lm$species == "Pink odd"]]],
          type = "dens_overlay", ndraws = 50)
-
+pp_check(lm_sst_fraser_sockeye[[best_lm$index[best_lm$region == "FrBC" &
+                                                best_lm$species == "Sockeye"]]],
+         type = "dens_overlay", ndraws = 50)
 
 
 ## lm + ar1 models -----------------------------------------
@@ -218,6 +227,9 @@ save(lm_ar1_sst_nbc_pink_even, file = "./outputs/lm_ar1_sst_nbc_pink_even.RData"
 lm_ar1_sst_nbc_pink_odd <- fit_lm_list(dat_nbc_pink_odd, covars, ar1 = TRUE)
 save(lm_ar1_sst_nbc_pink_odd, file = "./outputs/lm_ar1_sst_nbc_pink_odd.RData")
 
+## Fraser Sockeye
+lm_ar1_sst_fraser_sockeye <- fit_lm_list(dat_fraser_sockeye, covars, ar1 = TRUE)
+save(lm_ar1_sst_fraser_sockeye, file = "./outputs/lm_ar1_sst_fraser_sockeye.RData")
 
 
 ## Load models ##
@@ -231,6 +243,7 @@ load("./outputs/lm_ar1_sst_nbc_sockeye.RData")
 load("./outputs/lm_ar1_sst_nbc_coho.RData")
 load("./outputs/lm_ar1_sst_nbc_pink_even.RData")
 load("./outputs/lm_ar1_sst_nbc_pink_odd.RData")
+load("./outputs/lm_ar1_sst_fraser_sockeye.RData")
 
 
 ## Summarize best models ##
@@ -245,6 +258,7 @@ ms_lm_ar1[[7]]  <- brms_summarize(lm_ar1_sst_nbc_sockeye, "NBC", "Sockeye")
 ms_lm_ar1[[8]]  <- brms_summarize(lm_ar1_sst_nbc_coho, "NBC", "Coho")
 ms_lm_ar1[[9]]  <- brms_summarize(lm_ar1_sst_nbc_pink_even, "NBC", "Pink even")
 ms_lm_ar1[[10]] <- brms_summarize(lm_ar1_sst_nbc_pink_odd, "NBC", "Pink odd")
+ms_lm_ar1[[11]] <- brms_summarize(lm_ar1_sst_fraser_sockeye, "FrBC", "Sockeye")
 best_lm_ar1 <- lapply(ms_lm_ar1, function(m) m[m$dLOOIC == 0, ])
 best_lm_ar1 <- plyr::rbind.fill(best_lm_ar1)
 # pairs(lm_ar1_sst_goa_chum[[1]])
@@ -264,6 +278,7 @@ ce_lm_ar1[[7]]  <- ce_best(lm_ar1_sst_nbc_sockeye, 1, "NBC", "Sockeye")
 ce_lm_ar1[[8]]  <- ce_best(lm_ar1_sst_nbc_coho, 1, "NBC", "Coho")
 ce_lm_ar1[[9]]  <- ce_best(lm_ar1_sst_nbc_pink_even, 1, "NBC", "Pink even")
 ce_lm_ar1[[10]] <- ce_best(lm_ar1_sst_nbc_pink_odd, 1, "NBC", "Pink odd")
+ce_lm_ar1[[11]] <- ce_best(lm_ar1_sst_fraser_sockeye, 1, "FrBC", "Sockeye")
 ce_lm_ar1 <- plyr::rbind.fill(ce_lm_ar1)
 
 ## get data for best models
@@ -320,6 +335,9 @@ pp_check(lm_ar1_sst_nbc_pink_even[[best_lm_ar1$index[best_lm_ar1$region == "NBC"
 pp_check(lm_ar1_sst_nbc_pink_odd[[best_lm_ar1$index[best_lm_ar1$region == "NBC" &
                               best_lm_ar1$species == "Pink odd"]]],
          type = "dens_overlay", ndraws = 50)
+pp_check(lm_ar1_sst_fraser_sockeye[[best_lm_ar1$index[best_lm_ar1$region == "FrBC" &
+                              best_lm_ar1$species == "Sockeye"]]],
+         type = "dens_overlay", ndraws = 50)
 
 
 
@@ -366,6 +384,9 @@ save(gam_sst_nbc_pink_even, file = "./outputs/gam_sst_nbc_pink_even.RData")
 gam_sst_nbc_pink_odd <- fit_gam_list(dat_nbc_pink_odd, covars)
 save(gam_sst_nbc_pink_odd, file = "./outputs/gam_sst_nbc_pink_odd.RData")
 
+## Fraser Sockeye
+gam_sst_fraser_sockeye <- fit_gam_list(dat_fraser_sockeye, covars)
+save(gam_sst_fraser_sockeye, file = "./outputs/gam_sst_fraser_sockeye.RData")
 
 
 ## Load models ##
@@ -379,6 +400,7 @@ load("./outputs/gam_sst_nbc_sockeye.RData")
 load("./outputs/gam_sst_nbc_coho.RData")
 load("./outputs/gam_sst_nbc_pink_even.RData")
 load("./outputs/gam_sst_nbc_pink_odd.RData")
+load("./outputs/gam_sst_fraser_sockeye.RData")
 
 
 
@@ -394,6 +416,7 @@ ms_gam[[7]]  <- brms_summarize(gam_sst_nbc_sockeye, "NBC", "Sockeye")
 ms_gam[[8]]  <- brms_summarize(gam_sst_nbc_coho, "NBC", "Coho")
 ms_gam[[9]]  <- brms_summarize(gam_sst_nbc_pink_even, "NBC", "Pink even")
 ms_gam[[10]] <- brms_summarize(gam_sst_nbc_pink_odd, "NBC", "Pink odd")
+ms_gam[[11]] <- brms_summarize(gam_sst_fraser_sockeye, "FrBC", "Sockeye")
 best_gam <- lapply(ms_gam, function(m) m[m$dLOOIC == 0, ])
 best_gam <- plyr::rbind.fill(best_gam)
 
@@ -413,6 +436,7 @@ ce_gam[[7]]  <- ce_best(gam_sst_nbc_sockeye, 1, "NBC", "Sockeye")
 ce_gam[[8]]  <- ce_best(gam_sst_nbc_coho, 1, "NBC", "Coho")
 ce_gam[[9]]  <- ce_best(gam_sst_nbc_pink_even, 1, "NBC", "Pink even")
 ce_gam[[10]] <- ce_best(gam_sst_nbc_pink_odd, 1, "NBC", "Pink odd")
+ce_gam[[11]] <- ce_best(gam_sst_fraser_sockeye, "FrBC", "Sockeye")
 ce_gam <- plyr::rbind.fill(ce_gam)
 
 ## get data for best models
@@ -469,7 +493,9 @@ pp_check(gam_sst_nbc_pink_even[[best_gam$index[best_gam$region == "NBC" &
 pp_check(gam_sst_nbc_pink_odd[[best_gam$index[best_gam$region == "NBC" &
                               best_gam$species == "Pink odd"]]],
          type = "dens_overlay", ndraws = 50)
-
+pp_check(gam_sst_fraser_sockeye[[best_gam$index[best_gam$region == "FrBC" &
+                              best_gam$species == "Sockeye"]]],
+         type = "dens_overlay", ndraws = 50)
 
 
 ## gam + s(time) models ------------------------------------
@@ -516,6 +542,10 @@ gam_time_sst_nbc_pink_odd <- fit_gam_list(dat_nbc_pink_odd, covars, time = "smoo
 save(gam_time_sst_nbc_pink_odd, file = "./outputs/gam_time_sst_nbc_pink_odd.RData")
 
 
+## Fraser Sockeye
+gam_time_sst_fraser_sockeye <- fit_gam_list(dat_fraser_sockeye, covars, time = "smooth")
+save(gam_time_sst_fraser_sockeye, file = "./outputs/gam_time_sst_fraser_sockeye.RData")
+
 
 ## Load models ##
 load("./outputs/gam_time_sst_goa_chum.RData")
@@ -528,6 +558,7 @@ load("./outputs/gam_time_sst_nbc_sockeye.RData")
 load("./outputs/gam_time_sst_nbc_coho.RData")
 load("./outputs/gam_time_sst_nbc_pink_even.RData")
 load("./outputs/gam_time_sst_nbc_pink_odd.RData")
+load("./outputs/gam_time_sst_fraser_sockeye.RData")
 
 
 
@@ -543,6 +574,7 @@ ms_gam_time[[7]]  <- brms_summarize(gam_time_sst_nbc_sockeye, "NBC", "Sockeye")
 ms_gam_time[[8]]  <- brms_summarize(gam_time_sst_nbc_coho, "NBC", "Coho")
 ms_gam_time[[9]]  <- brms_summarize(gam_time_sst_nbc_pink_even, "NBC", "Pink even")
 ms_gam_time[[10]] <- brms_summarize(gam_time_sst_nbc_pink_odd, "NBC", "Pink odd")
+ms_gam_time[[11]] <- brms_summarize(gam_time_sst_fraser_sockeye, "FrBC", "Sockeye")
 best_gam_time <- lapply(ms_gam_time, function(m) m[m$dLOOIC == 0, ])
 best_gam_time <- plyr::rbind.fill(best_gam_time)
 
@@ -562,6 +594,7 @@ ce_gam_time[[7]]  <- ce_best(gam_time_sst_nbc_sockeye, 1, "NBC", "Sockeye")
 ce_gam_time[[8]]  <- ce_best(gam_time_sst_nbc_coho, 1, "NBC", "Coho")
 ce_gam_time[[9]]  <- ce_best(gam_time_sst_nbc_pink_even, 1, "NBC", "Pink even")
 ce_gam_time[[10]] <- ce_best(gam_time_sst_nbc_pink_odd, 1, "NBC", "Pink odd")
+ce_gam_time[[11]] <- ce_best(gam_time_sst_fraser_sockeye, 1, "FrBC", "Sockeye")
 ce_gam_time <- plyr::rbind.fill(ce_gam_time)
 
 ## get data for best models
@@ -618,6 +651,9 @@ pp_check(gam_time_sst_nbc_pink_even[[best_gam_time$index[best_gam_time$region ==
 pp_check(gam_time_sst_nbc_pink_odd[[best_gam_time$index[best_gam_time$region == "NBC" &
                                     best_gam_time$species == "Pink odd"]]],
          type = "dens_overlay", ndraws = 50)
+pp_check(gam_time_sst_fraser_sockeye[[best_gam_time$index[best_gam_time$region == "FrBC" &
+                                    best_gam_time$species == "Sockeye"]]],
+         type = "dens_overlay", ndraws = 50)
 
 
 
@@ -664,6 +700,9 @@ save(gam_ar1_sst_nbc_pink_even, file = "./outputs/gam_ar1_sst_nbc_pink_even.RDat
 gam_ar1_sst_nbc_pink_odd <- fit_gam_list(dat_nbc_pink_odd, covars, time = "ar1")
 save(gam_ar1_sst_nbc_pink_odd, file = "./outputs/gam_ar1_sst_nbc_pink_odd.RData")
 
+## Fraser Sockeye
+gam_ar1_time_sst_fraser_sockeye <- fit_gam_list(dat_fraser_sockeye, covars, time = "ar1")
+save(gam_ar1_time_sst_fraser_sockeye, file = "./outputs/gam_ar1_time_sst_fraser_sockeye.RData")
 
 
 ## Load models ##
@@ -677,6 +716,7 @@ load("./outputs/gam_ar1_sst_nbc_sockeye.RData")
 load("./outputs/gam_ar1_sst_nbc_coho.RData")
 load("./outputs/gam_ar1_sst_nbc_pink_even.RData")
 load("./outputs/gam_ar1_sst_nbc_pink_odd.RData")
+load("./outputs/gam_ar1_sst_fraser_sockeye.RData")
 
 
 
@@ -692,6 +732,7 @@ ms_gam_ar1[[7]]  <- brms_summarize(gam_ar1_sst_nbc_sockeye, "NBC", "Sockeye")
 ms_gam_ar1[[8]]  <- brms_summarize(gam_ar1_sst_nbc_coho, "NBC", "Coho")
 ms_gam_ar1[[9]]  <- brms_summarize(gam_ar1_sst_nbc_pink_even, "NBC", "Pink even")
 ms_gam_ar1[[10]] <- brms_summarize(gam_ar1_sst_nbc_pink_odd, "NBC", "Pink odd")
+ms_gam_ar1[[11]] <- brms_summarize(gam_ar1_sst_fraser_sockeye, "FrBC", "Sockeye")
 best_gam_ar1 <- lapply(ms_gam_ar1, function(m) m[m$dLOOIC == 0, ])
 best_gam_ar1 <- plyr::rbind.fill(best_gam_ar1)
 
@@ -711,6 +752,7 @@ ce_gam_ar1[[7]]  <- ce_best(gam_ar1_sst_nbc_sockeye, 1, "NBC", "Sockeye")
 ce_gam_ar1[[8]]  <- ce_best(gam_ar1_sst_nbc_coho, 1, "NBC", "Coho")
 ce_gam_ar1[[9]]  <- ce_best(gam_ar1_sst_nbc_pink_even, 1, "NBC", "Pink even")
 ce_gam_ar1[[10]] <- ce_best(gam_ar1_sst_nbc_pink_odd, 1, "NBC", "Pink odd")
+ce_gam_ar1[[11]] <- ce_best(gam_ar1_sst_fraser_sockeye, 1, "FrBC", "Sockeye")
 ce_gam_ar1 <- plyr::rbind.fill(ce_gam_ar1)
 
 ## get data for best models
@@ -767,4 +809,6 @@ pp_check(gam_ar1_sst_nbc_pink_even[[best_gam_ar1$index[best_gam_ar1$region == "N
 pp_check(gam_ar1_sst_nbc_pink_odd[[best_gam_ar1$index[best_gam_ar1$region == "NBC" &
                               best_gam_ar1$species == "Pink odd"]]],
          type = "dens_overlay", ndraws = 50)
-
+pp_check(gam_ar1_sst_fraser_sockeye[[best_gam_ar1$index[best_gam_ar1$region == "FrBC" &
+                              best_gam_ar1$species == "Sockeye"]]],
+         type = "dens_overlay", ndraws = 50)
