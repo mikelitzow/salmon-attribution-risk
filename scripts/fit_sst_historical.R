@@ -701,9 +701,8 @@ gam_ar1_sst_nbc_pink_odd <- fit_gam_list(dat_nbc_pink_odd, covars, time = "ar1")
 save(gam_ar1_sst_nbc_pink_odd, file = "./outputs/gam_ar1_sst_nbc_pink_odd.RData")
 
 ## Fraser Sockeye
-gam_ar1_time_sst_fraser_sockeye <- fit_gam_list(dat_fraser_sockeye, covars, time = "ar1")
-save(gam_ar1_time_sst_fraser_sockeye, file = "./outputs/gam_ar1_time_sst_fraser_sockeye.RData")
-
+gam_ar1_sst_fraser_sockeye <- fit_gam_list(dat_fraser_sockeye, covars, time = "ar1")
+save(gam_ar1_sst_fraser_sockeye, file = "./outputs/gam_ar1_sst_fraser_sockeye.RData")
 
 ## Load models ##
 load("./outputs/gam_ar1_sst_goa_chum.RData")
