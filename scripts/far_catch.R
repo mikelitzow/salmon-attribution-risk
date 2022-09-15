@@ -10,6 +10,11 @@ dir.create("./figures/sst_catch", showWarnings = FALSE)
 goa_catch <- read.csv("./data/goa.catch.csv")
 goa_age   <- read.csv("./data/goa_age.csv")
 
+
+## Handle 2022
+# goa_catch <- goa_catch[goa_catch$year != 2022, ]
+
+
 ## Add region
 goa_catch$region <- "GOA"
 
