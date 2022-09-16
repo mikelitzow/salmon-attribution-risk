@@ -11,8 +11,8 @@ goa_catch <- read.csv("./data/goa.catch.csv")
 goa_age   <- read.csv("./data/goa_age.csv")
 
 
-## Handle 2022
-# goa_catch <- goa_catch[goa_catch$year != 2022, ]
+## Exclude 2022 for now
+goa_catch <- goa_catch[goa_catch$year != 2022, ]
 
 
 ## Add region
