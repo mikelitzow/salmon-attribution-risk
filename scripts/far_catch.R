@@ -27,6 +27,13 @@ goa_far <- read.csv("./data/GOA_3yr_annual_FAR.csv")
 ## Subset years
 catch_wide <- catch_wide[catch_wide$year >= 1965, ]
 
+
+## Remove south peninsula: from Greg R. -- Very very very few sockeye originate
+## from the southern Alaska Peninsula management area, but the catch in this
+## area likely dominates the GOA trend line because of catches from Bristol Bay
+## origin sockeye
+catch_wide <- catch_wide[catch_wide$area != "south.peninsula", ]
+
 ## Sum across catch regions
 sock <- plyr::ddply(catch_wide, .(region, year), summarize, catch = sum(sockeye))
 
