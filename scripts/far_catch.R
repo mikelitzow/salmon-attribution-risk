@@ -11,8 +11,8 @@ goa_catch <- read.csv("./data/goa.catch.csv")
 goa_age   <- read.csv("./data/goa_age.csv")
 
 
-## Exclude 2022 for now
-goa_catch <- goa_catch[goa_catch$year != 2022, ]
+## Exclude 2022 for now (3-yr runnning mean = NA!)
+# goa_catch <- goa_catch[goa_catch$year != 2022, ]
 
 
 ## Add region
@@ -21,8 +21,10 @@ goa_catch$region <- "GOA"
 ## Combine
 catch_wide <- goa_catch
 
-## Read in SST data
-goa_far <- read.csv("./data/GOA_3yr_annual_FAR.csv")
+## Read in FAR data
+goa_far <- read.csv("./data/complete_FAR_RR_time_series_with_uncertainty.csv") %>%
+    filter(region == "Gulf_of_Alaska",
+           window == "3yr_running_mean")
 
 ## Subset years
 catch_wide <- catch_wide[catch_wide$year >= 1965, ]
@@ -47,7 +49,7 @@ catch$region_fac  <- factor(catch$region, levels = unique(catch$region))
 
 ## Add era variable
 catch$era <- "1977-1988"
-catch$era <- ifelse(catch$year >= 1989, "1989-2021", catch$era)
+catch$era <- ifelse(catch$year >= 1989, "1989-2022", catch$era)
 catch$era <- ifelse(catch$year <= 1976, "1965-1976", catch$era)
 
 
@@ -81,7 +83,7 @@ for(i in 1:nrow(catch)) {
 
     if(sp == "Sockeye") {
         far_i <- far_dat[far_dat$year %in% (yr - 1):(yr - 5), ]
-        annual_far_3 <- weighted.mean(far_i$prob, w = rev(age_wgt_i))
+        annual_far_3 <- weighted.mean(far_i$FAR, w = rev(age_wgt_i))
     }
 
     catch$annual_far_3[i] <- annual_far_3
