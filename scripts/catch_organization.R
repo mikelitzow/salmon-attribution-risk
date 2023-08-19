@@ -49,16 +49,6 @@ pws$Area = "prince.william.sound"
 pws <- pws %>%
   select(-Chinook)
 
-# south Peninsula
-pen <- read.csv("./data/south.peninsula.catch.csv")
-
-head(pen)
-
-# remove Chinook and add area
-pen <- pen %>%
-  select(-chinook) %>%
-  mutate(Area = "south.peninsula")
-
 # Chignik
 chig <- read.csv("./data/chignik.catch.csv")
 
@@ -77,13 +67,13 @@ chig <- chig %>%
   mutate(Area = "chignik")
 
 # double-check names
-names(se); names(pws); names(ci); names(kod); names(chig); names(pen) # looks good
+names(se); names(pws); names(ci); names(kod); names(chig) # looks good
 
 # make all the names identical and combine
-names(se) <- names(pws) <- names(ci) <- names(kod) <- names(chig) <- names(pen) <-
+names(se) <- names(pws) <- names(ci) <- names(kod) <- names(chig) <-
   c("year", "sockeye", "coho", "pink", "chum", "area")
 
-goa.catch <- rbind(se, pws, ci, kod, chig, pen)
+goa.catch <- rbind(se, pws, ci, kod, chig)
 
 # and save
 write.csv(goa.catch, "./data/goa.catch.csv", row.names = F)
