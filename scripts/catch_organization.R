@@ -29,6 +29,10 @@ kod <- read.csv("./data/kodiak.catch.csv")
 
 head(kod)
 
+# fix missing area in 2022 (set all to "Kodiak")
+kod$Area <- "kodiak"
+
+
 # rearrange and drop Chinook
 kod <- kod %>%
   select(Year, Sockeye, Coho, Pink, Chum, Area)
