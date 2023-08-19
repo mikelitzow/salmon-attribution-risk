@@ -11,10 +11,6 @@ goa_catch <- read.csv("./data/goa.catch.csv")
 goa_age   <- read.csv("./data/goa_age.csv")
 
 
-## Exclude 2022 for now (3-yr runnning mean = NA!)
-# goa_catch <- goa_catch[goa_catch$year != 2022, ]
-
-
 ## Add region
 goa_catch$region <- "GOA"
 
