@@ -1,4 +1,4 @@
-# Combine FAR and catch for GOA sockeye example
+# Combine FAR, SST and catch for GOA sockeye example
 
 source("./scripts/load.R")
 dir.create("./figures/sst_catch", showWarnings = FALSE)
@@ -21,6 +21,11 @@ catch_wide <- goa_catch
 goa_far <- read.csv("./data/complete_FAR_RR_time_series_with_uncertainty.csv") %>%
     filter(region == "Gulf_of_Alaska",
            window == "3yr_running_mean")
+
+## Read in SST data
+goa_sst <- read.csv("./data/regional_north_pacific_ersst_time_series.csv") %>%
+    filter(region == "Gulf_of_Alaska") %>%
+           select(year, annual.three.yr.running.mean)
 
 ## Subset years
 catch_wide <- catch_wide[catch_wide$year >= 1965, ]
@@ -64,6 +69,28 @@ age_wgt_goa <- c(mean(goa_age$R_ocean_1),
                  mean(goa_age$R_ocean_5))
 
 
+## Add SST
+catch$annual_sst_3 <- NA
+
+for(i in 1:nrow(catch)) {
+    # i <- 1
+    rg <- catch$region[i]
+    sp <- catch$species[i]
+    yr <- catch$year[i]
+    if(rg == "GOA") {
+        sst_dat <- goa_sst
+        age_wgt_i <- age_wgt_goa
+    }
+
+    if(sp == "Sockeye") {
+        sst_i <- sst_dat[sst_dat$year %in% (yr - 1):(yr - 5), ]
+        annual_sst_3 <- weighted.mean(sst_i$annual.three.yr.running.mean, w = rev(age_wgt_i))
+    }
+
+    catch$annual_sst_3[i] <- annual_sst_3
+
+}
+
 ## Add FAR
 catch$annual_far_3 <- NA
 
@@ -76,16 +103,15 @@ for(i in 1:nrow(catch)) {
         far_dat <- goa_far
         age_wgt_i <- age_wgt_goa
     }
-
+    
     if(sp == "Sockeye") {
         far_i <- far_dat[far_dat$year %in% (yr - 1):(yr - 5), ]
         annual_far_3 <- weighted.mean(far_i$FAR, w = rev(age_wgt_i))
     }
-
+    
     catch$annual_far_3[i] <- annual_far_3
-
+    
 }
-
 
 ## Create different time periods ---------------------------
 catch_1965 <- catch
@@ -102,4 +128,4 @@ catch <- plyr::ddply(catch, .(region, species), transform,
                      catch_stnd = scale(catch))
 
 
-write.csv(catch, file = "./data/GOA_sockeye_catch_far.csv", row.names = FALSE)
+write.csv(catch, file = "./data/GOA_sockeye_catch_sst_far.csv", row.names = FALSE)
