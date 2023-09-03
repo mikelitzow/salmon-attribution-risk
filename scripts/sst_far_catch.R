@@ -85,7 +85,7 @@ for(i in 1:nrow(catch)) {
 
     if(sp == "Sockeye") {
         sst_i <- sst_dat[sst_dat$year %in% (yr - 1):(yr - 5), ]
-        annual_sst_3 <- weighted.mean(sst_i$annual.anomaly.three.yr.running.mean, w = rev(age_wgt_i))
+        annual_sst_3 <- weighted.mean(sst_i$annual.anomaly.three.yr.running.mean, w = rev(age_wgt_i), na.rm = T)
     }
 
     catch$annual_sst_3[i] <- annual_sst_3
