@@ -1,4 +1,5 @@
 # Combine FAR, SST and catch for GOA sockeye example
+library(tidyverse)
 
 source("./scripts/load.R")
 dir.create("./figures/sst_catch", showWarnings = FALSE)
@@ -23,9 +24,9 @@ goa_far <- read.csv("./data/complete_FAR_RR_time_series_with_uncertainty.csv") %
            window == "3yr_running_mean")
 
 ## Read in SST data
-goa_sst <- read.csv("./data/regional_north_pacific_ersst_time_series.csv") %>%
+goa_sst <- read.csv("./data/regional_north_pacific_ersst_anomaly_time_series.csv") %>%
     filter(region == "Gulf_of_Alaska") %>%
-           select(year, annual.three.yr.running.mean)
+           select(year, annual.anomaly.three.yr.running.mean)
 
 ## Subset years
 catch_wide <- catch_wide[catch_wide$year >= 1965, ]
@@ -84,7 +85,7 @@ for(i in 1:nrow(catch)) {
 
     if(sp == "Sockeye") {
         sst_i <- sst_dat[sst_dat$year %in% (yr - 1):(yr - 5), ]
-        annual_sst_3 <- weighted.mean(sst_i$annual.three.yr.running.mean, w = rev(age_wgt_i))
+        annual_sst_3 <- weighted.mean(sst_i$annual.anomaly.three.yr.running.mean, w = rev(age_wgt_i))
     }
 
     catch$annual_sst_3[i] <- annual_sst_3
@@ -128,4 +129,4 @@ catch <- plyr::ddply(catch, .(region, species), transform,
                      catch_stnd = scale(catch))
 
 
-write.csv(catch, file = "./data/GOA_sockeye_catch_sst_far.csv", row.names = FALSE)
+write.csv(catch, file = "./data/GOA_sockeye_catch_sst_far_no_s.peninsula.csv", row.names = FALSE)
